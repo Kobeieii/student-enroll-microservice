@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+  enroll_rpc:
+    container_name: enroll_rpc
+    build: python/
+    restart: always
+
+    depends_on:
+      - db
+    networks:
+      - microservice
+      - default
+
+  db:
+    container_name: enroll_mariadb
+    image: mariadb:latest
+    restart: always
+    volumes:
+      - ./mariadb/initdb/:/docker-entrypoint-initdb.d
+      - ./mariadb/data/:/var/lib/mysql/
+    environment:
+      - MYSQL_ROOT_PASSWORD=banana
+      - MYSQL_DATABASE=devops_db
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin101
+    
+  pma:
+    container_name: enroll_phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    restart: always
+
+    networks:
+      - webproxy
+      - default
+    
+    ports:
+      - "8082:80"
+
+networks:
+  default:
+    external:
+      name: enroll_network
+  microservice:
+    external:
+      name: microservice_network
+  webproxy:
+    external:
+      name: webproxy
